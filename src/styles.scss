@@ -1,0 +1,61 @@
+﻿@use 'primeicons/primeicons.css';
+/* ==========================================================================
+   IFX NETWORKS - GLOBAL DESIGN SYSTEM & THEME TOKENS
+   ========================================================================== */
+
+:root, html.dark {
+  --bg-body: #0b1120;
+  --card-bg: #131e32;
+  --border-color: #1e293b;
+  --text-heading: #f8fafc;
+  --text-body: #e2e8f0;
+  --text-muted: #94a3b8;
+  --input-bg: #0f172a;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.04);
+}
+
+html.light {
+  --bg-body: #f8fafc;
+  --card-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-heading: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --input-bg: #f1f5f9;
+  --btn-secondary-bg: rgba(0, 0, 0, 0.04);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

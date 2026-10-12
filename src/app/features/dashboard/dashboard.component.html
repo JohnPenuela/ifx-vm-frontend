@@ -1,0 +1,459 @@
+﻿<div class="dashboard-layout">
+  <!-- Barra de Navegación Principal -->
+  <header class="navbar">
+    <div class="navbar-left">
+      <div class="brand-container">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="brand-icon">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-company">IFX NETWORKS</span>
+          <span class="brand-service">Cloud Infrastructure Manager</span>
+        </div>
+      </div>
+
+      <!-- Estado en tiempo real del WebSocket Hub -->
+      <div class="ws-status-badge" [ngClass]="wsService.status()">
+        <span class="status-indicator-dot"></span>
+        <span class="status-text">
+          {{ wsService.status() === 'connected' ? 'WebSockets Activo' : (wsService.status() === 'connecting' ? 'Conectando Socket...' : 'Socket Inactivo') }}
+        </span>
+      </div>
+    </div>
+
+    <div class="navbar-right">
+      <!-- Toggle de Modo Oscuro / Claro -->
+      <button class="icon-btn" (click)="themeService.toggleTheme()"
+              [title]="themeService.isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+        <i [class]="themeService.isDark() ? 'pi pi-sun' : 'pi pi-moon'" style="font-size: 1.15rem;"></i>
+      </button>
+
+      <!-- Perfil de Usuario y Rol -->
+      <div class="user-profile">
+        <div class="user-avatar">
+          {{ authService.currentUser()?.name?.charAt(0) || 'U' }}
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ authService.currentUser()?.name }}</span>
+          <span class="user-role-badge" [ngClass]="authService.isAdmin() ? 'role-admin' : 'role-client'">
+            {{ authService.currentUser()?.role }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Botón de Cerrar Sesión -->
+      <button class="btn-logout" (click)="authService.logout()" title="Cerrar sesión segura">
+        <i class="pi pi-sign-out" style="font-size: 0.95rem;"></i>
+        <span class="logout-text">Salir</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Contenedor Principal del Dashboard -->
+  <main class="dashboard-content">
+    <!-- Panel Superior: Métricas de Recursos Asignados (Data Visualization) -->
+    <section class="metrics-grid">
+      <!-- Métrica 1: Cores de VMs Activas -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">vCPU Cores Activos</span>
+          <div class="metric-icon-wrap icon-blue">
+            <i class="pi pi-server" style="font-size: 1.25rem;"></i>
+          </div>
+        </div>
+        <div class="metric-value">
+          {{ vmStateService.activeCores() }}
+          <span class="metric-unit">Cores</span>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-sub">Capacidad de cómputo en ejecución</span>
+        </div>
+      </div>
+
+      <!-- Métrica 2: RAM de VMs Activas -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Memoria RAM Activa</span>
+          <div class="metric-icon-wrap icon-cyan">
+            <i class="pi pi-database" style="font-size: 1.25rem;"></i>
+          </div>
+        </div>
+        <div class="metric-value">
+          {{ vmStateService.activeRamGb() }}
+          <span class="metric-unit">GB RAM</span>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-sub">Memoria física asignada en vivo</span>
+        </div>
+      </div>
+
+      <!-- Métrica 3: Disco de VMs Activas -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Almacenamiento Activo</span>
+          <div class="metric-icon-wrap icon-emerald">
+            <i class="pi pi-hard-drive" style="font-size: 1.25rem;"></i>
+          </div>
+        </div>
+        <div class="metric-value">
+          {{ vmStateService.activeDiskGb() | number }}
+          <span class="metric-unit">GB NVMe</span>
+        </div>
+        <div class="metric-footer">
+          <span class="metric-sub">Capacidad de disco en ejecución</span>
+        </div>
+      </div>
+
+      <!-- Métrica 4: Total de Máquinas Virtuales -->
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Instancias Totales</span>
+          <div class="metric-icon-wrap icon-purple">
+            <i class="pi pi-th-large" style="font-size: 1.25rem;"></i>
+          </div>
+        </div>
+        <div class="metric-value">
+          {{ vmStateService.vms().length }}
+          <span class="metric-unit">VMs</span>
+        </div>
+        <div class="metric-footer status-breakdown">
+          <p-tag severity="success" [value]="vmStateService.activeVmsList().length + ' Activas'"></p-tag>
+          <p-tag severity="danger" [value]="vmStateService.stoppedCount() + ' Apagadas'"></p-tag>
+          <p-tag severity="warn" [value]="vmStateService.maintenanceCount() + ' Mant.'"></p-tag>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel de Gráficos (Data Visualization) -->
+    <section class="charts-panel">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Consumo de Recursos en VMs Activas</h3>
+            <p class="chart-subtitle">Suma total de vCPU, memoria RAM y almacenamiento aprovisionado en vivo</p>
+          </div>
+        </div>
+        <div class="chart-body">
+          <canvas #resourceChartCanvas></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h3 class="chart-title">Distribución por Sistema Operativo</h3>
+            <p class="chart-subtitle">Imágenes de distribución Linux / Windows desplegadas</p>
+          </div>
+        </div>
+        <div class="chart-body doughnut-wrap">
+          <canvas #osChartCanvas></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Barra de Herramientas y Filtros -->
+    <section class="toolbar-section">
+      <div class="toolbar-left">
+        <!-- Búsqueda en tiempo real con PrimeNG IconField -->
+        <p-iconField iconPosition="left" class="search-box-p">
+          <p-inputIcon styleClass="pi pi-search"></p-inputIcon>
+          <input
+            pInputText
+            type="text"
+            placeholder="Buscar por nombre, SO o IP..."
+            [ngModel]="vmStateService.searchTerm()"
+            (ngModelChange)="onSearchChange($event)"
+            class="p-inputtext-sm w-full"
+          />
+        </p-iconField>
+
+        <!-- Filtros por Estado -->
+        <div class="filter-tabs">
+          <button
+            class="tab-btn"
+            [class.active]="vmStateService.activeFilter() === 'all'"
+            (click)="setFilter('all')"
+          >
+            Todas ({{ vmStateService.vms().length }})
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="vmStateService.activeFilter() === 'Activa'"
+            (click)="setFilter('Activa')"
+          >
+            Activas ({{ vmStateService.activeVmsList().length }})
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="vmStateService.activeFilter() === 'Apagada'"
+            (click)="setFilter('Apagada')"
+          >
+            Apagadas ({{ vmStateService.stoppedCount() }})
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="vmStateService.activeFilter() === 'Mantenimiento'"
+            (click)="setFilter('Mantenimiento')"
+          >
+            Mantenimiento ({{ vmStateService.maintenanceCount() }})
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Selector de Vista: Tarjetas vs Tabla PrimeNG  -->
+        <div class="view-switcher">
+          <button
+            class="view-toggle-btn"
+            [class.active]="viewMode() === 'table'"
+            (click)="setViewMode('table')"
+            title="Vista Tabla PrimeNG"
+          >
+            <i class="pi pi-list"></i>
+            <span>Tabla</span>
+          </button>
+          <button
+            class="view-toggle-btn"
+            [class.active]="viewMode() === 'grid'"
+            (click)="setViewMode('grid')"
+            title="Vista Tarjetas Cuadrícula"
+          >
+            <i class="pi pi-th-large"></i>
+            <span>Tarjetas</span>
+          </button>
+        </div>
+
+        <!-- BOTÓN CREAR VM: Restringido con *ngIf para 'Administrador' -->
+        <button
+          *ngIf="authService.isAdmin()"
+          pButton
+          label="Nueva Máquina Virtual"
+          icon="pi pi-plus"
+          class="p-button-primary p-button-sm"
+          (click)="openCreateModal()"
+        ></button>
+
+        <div *ngIf="!authService.isAdmin()" class="readonly-badge">
+          <i class="pi pi-lock lock-icon"></i>
+          <span>Perfil Cliente: Modo Solo Lectura</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skeleton Loader durante carga inicial -->
+    <app-skeleton-loader *ngIf="vmStateService.loading()"></app-skeleton-loader>
+
+    <!-- Estado Vacío -->
+    <div *ngIf="!vmStateService.loading() && vmStateService.filteredVms().length === 0" class="empty-state">
+      <div class="empty-icon-wrap">
+        <i class="pi pi-inbox" style="font-size: 2.5rem; color: var(--text-muted);"></i>
+      </div>
+      <h3 class="empty-title">No se encontraron máquinas virtuales</h3>
+      <p class="empty-sub">
+        No hay instancias que coincidan con el filtro actual o término de búsqueda.
+      </p>
+      <button *ngIf="authService.isAdmin()" pButton label="Aprovisionar Primera VM" icon="pi pi-plus" class="p-button-outlined" (click)="openCreateModal()"></button>
+    </div>
+
+    <!-- =========================================================================
+         VISTA 1: TABLA PRIMENG 
+         ========================================================================= -->
+    <section *ngIf="!vmStateService.loading() && vmStateService.filteredVms().length > 0 && viewMode() === 'table'" class="table-container-card">
+      <p-table
+        [value]="vmStateService.filteredVms()"
+        [paginator]="true"
+        [rows]="8"
+        [rowsPerPageOptions]="[5, 8, 15, 25]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} instancias"
+        responsiveLayout="scroll"
+        styleClass="p-datatable-sm p-datatable-striped"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="name">
+              Instancia <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="os">
+              Sistema Operativo <p-sortIcon field="os"></p-sortIcon>
+            </th>
+            <th pSortableColumn="ip_address">
+              Dirección IP <p-sortIcon field="ip_address"></p-sortIcon>
+            </th>
+            <th pSortableColumn="cores">
+              vCPU <p-sortIcon field="cores"></p-sortIcon>
+            </th>
+            <th pSortableColumn="ram">
+              RAM (GB) <p-sortIcon field="ram"></p-sortIcon>
+            </th>
+            <th pSortableColumn="disk">
+              Disco (GB) <p-sortIcon field="disk"></p-sortIcon>
+            </th>
+            <th pSortableColumn="status">
+              Estado <p-sortIcon field="status"></p-sortIcon>
+            </th>
+            <th *ngIf="authService.isAdmin()" style="text-align: center; width: 180px;">
+              Acciones
+            </th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-vm>
+          <tr [class.highlight-row]="vm._highlight" [class.optimistic-row]="vm._optimistic">
+            <td>
+              <div class="vm-name-cell">
+                <span class="font-bold">{{ vm.name }}</span>
+                <span *ngIf="vm._optimistic" class="optimistic-chip">
+                  <i class="pi pi-spin pi-spinner" style="font-size: 0.7rem;"></i> Sincronizando
+                </span>
+                <small *ngIf="vm.description" class="text-muted block text-xs">{{ vm.description }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="os-badge-cell">
+                <i class="pi pi-desktop" style="margin-right: 0.35rem; font-size: 0.85rem;"></i>
+                {{ vm.os }}
+              </span>
+            </td>
+            <td>
+              <span class="ip-mono">{{ vm.ip_address || '10.0.0.1' }}</span>
+            </td>
+            <td>
+              <span class="resource-badge">{{ vm.cores }} Cores</span>
+            </td>
+            <td>
+              <span class="resource-badge">{{ vm.ram }} GB</span>
+            </td>
+            <td>
+              <span class="resource-badge">{{ vm.disk }} GB NVMe</span>
+            </td>
+            <td>
+              <p-tag [value]="vm.status" [severity]="getTagSeverity(vm.status)"></p-tag>
+            </td>
+            <td *ngIf="authService.isAdmin()" style="text-align: center;">
+              <div class="table-actions-cell">
+                <!-- Conmutar Estado -->
+                <button
+                  pButton
+                  type="button"
+                  [icon]="vm.status === 'Activa' ? 'pi pi-power-off' : 'pi pi-play'"
+                  [class]="vm.status === 'Activa' ? 'p-button-danger p-button-text p-button-sm' : 'p-button-success p-button-text p-button-sm'"
+                  [title]="vm.status === 'Activa' ? 'Apagar instancia' : 'Encender instancia'"
+                  (click)="toggleVmStatus(vm)"
+                ></button>
+
+                <!-- Editar Recursos -->
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  class="p-button-secondary p-button-text p-button-sm"
+                  title="Editar recursos y configuración"
+                  (click)="openEditModal(vm)"
+                ></button>
+
+                <!-- Eliminar VM -->
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  class="p-button-danger p-button-text p-button-sm"
+                  title="Eliminar definitivamente"
+                  (click)="deleteVm(vm)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+
+    <!-- =========================================================================
+         VISTA 2: GRID DE TARJETAS (DATA CARDS)
+         ========================================================================= -->
+    <section *ngIf="!vmStateService.loading() && vmStateService.filteredVms().length > 0 && viewMode() === 'grid'" class="vm-grid">
+      <div
+        *ngFor="let vm of vmStateService.filteredVms()"
+        class="vm-card"
+        [class.pulse-updated]="vm._highlight"
+        [class.is-optimistic]="vm._optimistic"
+        [class.status-active]="vm.status === 'Activa'"
+        [class.status-stopped]="vm.status === 'Apagada'"
+        [class.status-maint]="vm.status === 'Mantenimiento'"
+      >
+        <div class="vm-card-header">
+          <p-tag [value]="vm.status" [severity]="getTagSeverity(vm.status)"></p-tag>
+          <span *ngIf="vm._optimistic" class="optimistic-badge">⚡ Optimistic UI</span>
+          <span class="vm-os-badge">{{ vm.os }}</span>
+        </div>
+
+        <div class="vm-card-title-block">
+          <h4 class="vm-name">{{ vm.name }}</h4>
+          <div class="vm-ip-tag" title="Dirección IP de red privada">
+            <i class="pi pi-globe" style="font-size: 0.8rem; margin-right: 0.25rem;"></i>
+            <span>{{ vm.ip_address || '10.0.0.1' }}</span>
+          </div>
+        </div>
+
+        <p *ngIf="vm.description" class="vm-description">{{ vm.description }}</p>
+
+        <div class="vm-specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">vCPU</span>
+            <span class="spec-value">{{ vm.cores }} Cores</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">RAM</span>
+            <span class="spec-value">{{ vm.ram }} GB</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Almacenamiento</span>
+            <span class="spec-value">{{ vm.disk }} GB NVMe</span>
+          </div>
+        </div>
+
+        <!-- Acciones en Tarjeta (Exclusivo Administrador) -->
+        <div *ngIf="authService.isAdmin()" class="vm-card-actions">
+          <button
+            pButton
+            type="button"
+            [label]="vm.status === 'Activa' ? 'Apagar' : 'Encender'"
+            [icon]="vm.status === 'Activa' ? 'pi pi-power-off' : 'pi pi-play'"
+            [class]="vm.status === 'Activa' ? 'p-button-outlined p-button-danger p-button-sm flex-1' : 'p-button-outlined p-button-success p-button-sm flex-1'"
+            (click)="toggleVmStatus(vm)"
+          ></button>
+
+          <button
+            pButton
+            type="button"
+            icon="pi pi-pencil"
+            class="p-button-text p-button-secondary p-button-sm"
+            title="Editar configuración"
+            (click)="openEditModal(vm)"
+          ></button>
+
+          <button
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-text p-button-danger p-button-sm"
+            title="Eliminar VM"
+            (click)="deleteVm(vm)"
+          ></button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal PrimeNG de Creación / Edición de Máquina Virtual -->
+<app-vm-modal
+  *ngIf="isModalOpen()"
+  [visible]="isModalOpen()"
+  [vm]="selectedVmForEdit()"
+  (save)="onModalSave($event)"
+  (close)="closeModal()"
+></app-vm-modal>
+

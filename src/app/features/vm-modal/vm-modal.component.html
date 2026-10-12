@@ -1,0 +1,172 @@
+﻿<p-dialog
+  [visible]="visible"
+  (visibleChange)="onCancel()"
+  [modal]="true"
+  [header]="isEditing ? 'Editar Configuración de VM' : 'Aprovisionar Nueva Máquina Virtual'"
+  [style]="{ width: '90vw', maxWidth: '640px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  styleClass="p-fluid ifx-vm-dialog"
+>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="modal-form-content">
+    <div class="p-field-grid">
+      <!-- Nombre de la Instancia -->
+      <div class="field-item full-width">
+        <label for="name" class="field-label">
+          Nombre de la Instancia <span class="required">*</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          placeholder="ej. srv-app-gateway-01"
+          [class.ng-invalid]="f['name'].touched && f['name'].invalid"
+          [class.ng-dirty]="f['name'].touched"
+        />
+        <small *ngIf="f['name'].touched && f['name'].invalid" class="p-error">
+          <span *ngIf="f['name'].errors?.['required']">El nombre es obligatorio.</span>
+          <span *ngIf="f['name'].errors?.['minlength']">Mínimo 3 caracteres.</span>
+          <span *ngIf="f['name'].errors?.['maxlength']">Máximo 50 caracteres.</span>
+          <span *ngIf="f['name'].errors?.['pattern']">Solo letras, números, guiones y guiones bajos (sin espacios).</span>
+        </small>
+      </div>
+
+      <!-- Sistema Operativo -->
+      <div class="field-item">
+        <label for="os" class="field-label">
+          Sistema Operativo <span class="required">*</span>
+        </label>
+        <p-select
+          id="os"
+          formControlName="os"
+          [options]="availableOperatingSystems"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar SO"
+          styleClass="w-full"
+        ></p-select>
+        <small *ngIf="f['os'].touched && f['os'].invalid" class="p-error">
+          Debe seleccionar un sistema operativo.
+        </small>
+      </div>
+
+      <!-- Estado Inicial -->
+      <div class="field-item">
+        <label for="status" class="field-label">
+          Estado de Operación <span class="required">*</span>
+        </label>
+        <p-select
+          id="status"
+          formControlName="status"
+          [options]="availableStatuses"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccionar Estado"
+          styleClass="w-full"
+        ></p-select>
+      </div>
+
+      <!-- Cores (vCPU) -->
+      <div class="field-item">
+        <label for="cores" class="field-label">
+          Cores (vCPU) <span class="required">*</span>
+        </label>
+        <p-inputNumber
+          id="cores"
+          formControlName="cores"
+          [min]="1"
+          [max]="64"
+          [showButtons]="true"
+          suffix=" vCPU"
+          buttonLayout="stacked"
+          styleClass="w-full"
+        ></p-inputNumber>
+        <small *ngIf="f['cores'].touched && f['cores'].invalid" class="p-error">
+          <span *ngIf="f['cores'].errors?.['required']">Requerido.</span>
+          <span *ngIf="f['cores'].errors?.['min']">Mínimo 1 core.</span>
+          <span *ngIf="f['cores'].errors?.['max']">Máximo 64 cores.</span>
+        </small>
+      </div>
+
+      <!-- RAM (GB) -->
+      <div class="field-item">
+        <label for="ram" class="field-label">
+          Memoria RAM <span class="required">*</span>
+        </label>
+        <p-inputNumber
+          id="ram"
+          formControlName="ram"
+          [min]="1"
+          [max]="512"
+          [showButtons]="true"
+          suffix=" GB"
+          buttonLayout="stacked"
+          styleClass="w-full"
+        ></p-inputNumber>
+        <small *ngIf="f['ram'].touched && f['ram'].invalid" class="p-error">
+          <span *ngIf="f['ram'].errors?.['required']">Requerido.</span>
+          <span *ngIf="f['ram'].errors?.['min']">Mínimo 1 GB RAM.</span>
+          <span *ngIf="f['ram'].errors?.['max']">Máximo 512 GB RAM.</span>
+        </small>
+      </div>
+
+      <!-- Almacenamiento (Disco GB) -->
+      <div class="field-item full-width">
+        <label for="disk" class="field-label">
+          Almacenamiento NVMe / SSD <span class="required">*</span>
+        </label>
+        <p-inputNumber
+          id="disk"
+          formControlName="disk"
+          [min]="10"
+          [max]="10000"
+          [step]="50"
+          [showButtons]="true"
+          suffix=" GB NVMe"
+          styleClass="w-full"
+        ></p-inputNumber>
+        <small *ngIf="f['disk'].touched && f['disk'].invalid" class="p-error">
+          <span *ngIf="f['disk'].errors?.['required']">Requerido.</span>
+          <span *ngIf="f['disk'].errors?.['min']">Mínimo 10 GB de disco.</span>
+          <span *ngIf="f['disk'].errors?.['max']">Máximo 10,000 GB.</span>
+        </small>
+      </div>
+
+      <!-- Descripción -->
+      <div class="field-item full-width">
+        <label for="description" class="field-label">Propósito / Descripción (Opcional)</label>
+        <input
+          id="description"
+          type="text"
+          pInputText
+          formControlName="description"
+          placeholder="ej. Servidor de analítica y base de datos"
+        />
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="dialog-footer-actions">
+      <button
+        pButton
+        type="button"
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-text p-button-secondary"
+        (click)="onCancel()"
+      ></button>
+      <button
+        pButton
+        type="button"
+        [label]="isEditing ? 'Guardar Cambios' : 'Aprovisionar VM'"
+        icon="pi pi-check"
+        class="p-button-primary"
+        [disabled]="form.invalid"
+        (click)="onSubmit()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

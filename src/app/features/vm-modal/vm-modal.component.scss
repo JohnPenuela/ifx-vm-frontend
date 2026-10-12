@@ -1,0 +1,42 @@
+﻿.modal-form-content {
+  padding-top: 0.5rem;
+}
+
+.p-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  .field-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-heading, #f8fafc);
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  .p-error {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+  }
+}
+
+.dialog-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}

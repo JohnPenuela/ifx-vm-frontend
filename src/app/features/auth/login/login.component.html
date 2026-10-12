@@ -1,0 +1,111 @@
+<div class="auth-page">
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <div class="theme-toggle-corner">
+    <button class="btn-theme" (click)="themeService.toggleTheme()" [title]="themeService.isDark() ? 'Modo Claro' : 'Modo Oscuro'">
+      <svg *ngIf="themeService.isDark()" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+      </svg>
+      <svg *ngIf="!themeService.isDark()" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="auth-card">
+    <div class="brand-header">
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="brand-icon">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+        </svg>
+        <span class="brand-title">IFX NETWORKS</span>
+      </div>
+      <h1 class="portal-heading">Cloud VM Manager</h1>
+      <p class="portal-subtext">Plataforma de Aprovisionamiento y Monitoreo de Infraestructura Virtual</p>
+    </div>
+
+    <!-- Credenciales de prueba rápida -->
+    <div class="quick-credentials">
+      <div class="quick-title">Accesos Rápidos de Demostración:</div>
+      <div class="quick-buttons">
+        <button type="button" class="btn-quick admin" (click)="fillAsAdmin()">
+          <span class="badge-dot admin"></span>
+          Ingresar como Administrador
+        </button>
+        <button type="button" class="btn-quick client" (click)="fillAsClient()">
+          <span class="badge-dot client"></span>
+          Ingresar como Cliente
+        </button>
+      </div>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Correo Corporativo</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
+            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+          </svg>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            class="form-control"
+            [class.is-invalid]="f['email'].touched && f['email'].invalid"
+            placeholder="usuario@ifxcorp.com"
+          />
+        </div>
+        <div *ngIf="f['email'].touched && f['email'].invalid" class="invalid-feedback">
+          <span *ngIf="f['email'].errors?.['required']">El correo es obligatorio.</span>
+          <span *ngIf="f['email'].errors?.['email']">Ingrese un correo válido.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Contraseña</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="field-icon">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+          </svg>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            class="form-control"
+            [class.is-invalid]="f['password'].touched && f['password'].invalid"
+            placeholder="••••••••••••"
+          />
+        </div>
+        <div *ngIf="f['password'].touched && f['password'].invalid" class="invalid-feedback">
+          <span *ngIf="f['password'].errors?.['required']">La contraseña es obligatoria.</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Mínimo 6 caracteres.</span>
+        </div>
+      </div>
+
+      <div class="security-note">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="shield-icon">
+          <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        <span>Sesión segura: Token JWT protegido bajo Cookie HttpOnly y SameSite Lax.</span>
+      </div>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="loginForm.invalid || authService.isAuthenticating()"
+      >
+        <span *ngIf="!authService.isAuthenticating()">Iniciar Sesión en el Panel</span>
+        <span *ngIf="authService.isAuthenticating()" class="spinner-wrap">
+          <span class="spinner"></span>
+          Autenticando credenciales...
+        </span>
+      </button>
+    </form>
+
+    <div class="card-footer">
+      <span>IFX NETWORKS COLOMBIA S.A.S — Data Center Solutions</span>
+    </div>
+  </div>
+</div>
